@@ -21,7 +21,7 @@ void taskSensorReading(void *pvParameters) {
         readLightIntensity(currentData.lightIntensity);
 
         // Print to Serial Monitor for debugging
-        Serial.printf("[Sensor Task] Temp: %.1f C | Hum: %.1f %% | Soil: %d %% | Light: %d %%\n",
+        Serial.printf("[Sensor Task] Temp: %.1f °C | Hum: %.1f %% | Soil: %d %% | Light: %d %%\n",
                       currentData.temperature, 
                       currentData.humidity, 
                       currentData.soilMoisture, 
