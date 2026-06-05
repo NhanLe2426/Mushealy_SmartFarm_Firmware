@@ -44,7 +44,7 @@ void taskSensorReading(void *pvParameters) {
         if (!isPumpOverrideActive) {
             if (currentData.soilMoisture < THRESHOLD_SOIL_MOISTURE) {
                 Serial.println("[Sensor Task] AUTO logic: Soil is dry. Triggering pump.");
-                xEventGroupSetBits(egPumpControl, EVENT_PUMP_ON);
+                xEventGroupSetBits(egDeviceControl, EVENT_PUMP_ON);
             }
         } else {
             Serial.println("[Sensor Task] AUTO logic suspended due to active manual override.");
@@ -52,6 +52,6 @@ void taskSensorReading(void *pvParameters) {
 
         // Delay for a specific period before the next reading
         // Using pdMS_TO_TICKS ensures accurate timing in the RTOS environment
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Read every 5 seconds
+        vTaskDelay(pdMS_TO_TICKS(10000)); // Read every 10 seconds
     }
 }

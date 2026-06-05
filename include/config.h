@@ -20,6 +20,10 @@ const int LIGHT_SENSOR_PIN = 33;                // P1
 // Digital pin for Water Pump Relay 
 const int PUMP_RELAY_PIN = 26;                  // P10.P13
 
+// NeoPixel RGB Light Configuration
+const int NEO_PIXEL_PIN = 2;                    // P3 (GPIO 2)
+const int NEO_PIXEL_NUM = 4;                    // Number of LEDs: 4 LEDs
+
 // ---------------------------------------------------------
 // System Parameters & Thresholds
 // ---------------------------------------------------------
@@ -29,14 +33,15 @@ const int THRESHOLD_SOIL_MOISTURE = 40;
 const int THRESHOLD_LIGHT = 2000;
 
 // Timing configurations (in milliseconds)
-const uint32_t TIME_PUMP_ACTIVE_MS = 3000;   // How long the pump stays on
-const uint32_t TIME_RECOVERING_MS = 5000;    // Wait time for water to absorb into soil
+const uint32_t TIME_PUMP_ACTIVE_MS = 2000;      // How long the pump stays on
+const uint32_t TIME_MANUAL_TIMEOUT_MS = 5000;   // Time out for Manual Mode 
+const uint32_t TIME_RECOVERING_MS = 5000;       // Wait time for water to absorb into soil
 
 // ---------------------------------------------------------
 // Scheduled Watering Configuration
 // ---------------------------------------------------------
-const int SCHEDULED_HOUR = 6;                   // Set hour (0-23)
-const int SCHEDULED_MINUTE = 30;                // Set minute (0-59)
+const int SCHEDULED_HOUR = 14;                   // Set hour (0-23)
+const int SCHEDULED_MINUTE = 42;                // Set minute (0-59)
 
 // P0 = 32
 // P1 = 33

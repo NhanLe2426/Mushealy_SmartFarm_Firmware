@@ -2,7 +2,7 @@
 
 QueueHandle_t qSensorData = NULL;
 SemaphoreHandle_t xMutexI2C = NULL;
-EventGroupHandle_t egPumpControl = NULL;
+EventGroupHandle_t egDeviceControl = NULL;
 
 volatile bool isPumpOverrideActive = false;
 volatile TickType_t pumpOverrideEndTime = 0;
@@ -19,5 +19,5 @@ void initGlobal_RTOS_Objects() {
     xMutexI2C = xSemaphoreCreateMutex();
 
     // Create Event Group for pump control signaling
-    egPumpControl = xEventGroupCreate();
+    egDeviceControl = xEventGroupCreate();
 }

@@ -20,7 +20,7 @@ struct SensorData
 // RTOS HANDLES
 extern QueueHandle_t qSensorData;           // The queue contains sensor data
 extern SemaphoreHandle_t xMutexI2C;         // Mutex to protect the I2C bus (DHT20 & LCD)
-extern EventGroupHandle_t egPumpControl;    // Event group to trigger water pump actions
+extern EventGroupHandle_t egDeviceControl;    // Event group to trigger pump and light actions
 
 // Override mechanism flags
 extern volatile bool isPumpOverrideActive;
@@ -29,8 +29,11 @@ extern volatile bool isPumpCurrentlyOn;             // The physical state of the
 extern volatile bool forcePublish;                  // Flag to trigger instant MQTT publish
 
 // Event Group Bits for Pump Control
-#define EVENT_PUMP_ON  (1 << 0)
-#define EVENT_PUMP_OFF (1 << 1)
+#define EVENT_PUMP_ON   (1 << 0)
+#define EVENT_PUMP_OFF  (1 << 1)
+// Event Group Bits for LED Control
+#define EVENT_LIGHT_ON  (1 << 2)
+#define EVENT_LIGHT_OFF (1 << 3)
 
 // Define override duration (e.g., 1 minutes = 60000 ms)
 #define OVERRIDE_DURATION_MS 60000
