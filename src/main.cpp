@@ -6,6 +6,7 @@
 // Include task modules
 #include "sensor_task.h"
 #include "lcd_display.h"
+#include "schedule_check.h"
 #include "pump_relay.h"
 #include "mqtt_connection.h"
 
@@ -26,7 +27,10 @@ void setup() {
     // Task LCD Display: Responsible for rendering sensor data to the LCD safely using I2C Mutex.
     xTaskCreate(taskDisplayLCD, "LCD Display Task", 4096, NULL, 1, NULL);
 
-    // Task Pump Control: 
+    // Task Schedule Check: Responsible for checking schedule to control the pump
+    xTaskCreate(taskScheduleCheck, "Schedule Checking Task", 2048, NULL, 1, NULL);
+
+    // Task Pump Control: Control the pump ON/OFF
     xTaskCreate(taskPumpControl, "Pump Control Task", 2048, NULL, 2, NULL);
 
     // Task MQTT Network Communication: Handles WiFi, MQTT pub/sub, and JSON parsing.

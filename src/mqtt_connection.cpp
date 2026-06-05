@@ -3,21 +3,22 @@
 // ---------------------------------------------------------
 // Network Credentials
 // ---------------------------------------------------------
-const char* WIFI_SSID     = "YOUR_WIFI_NAME";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID     = "SweepTosho";               // WiFi Name
+const char* WIFI_PASSWORD = "tencuatuia";           // WiFi Password
 
 // ---------------------------------------------------------
 // CoreIoT Configuration (ThingsBoard Protocol)
 // ---------------------------------------------------------
-const char* MQTT_BROKER   = "mqtt.coreiot.vn"; 
+const char* MQTT_BROKER   = "app.coreiot.io"; 
 const int   MQTT_PORT     = 1883; // Standard non-TLS MQTT port
 
 // For CoreIoT, the Device Access Token acts as the username
-const char* MQTT_USER     = "YOUR_COREIOT_ACCESS_TOKEN"; 
-const char* MQTT_PASS     = ""; // Password is left empty
+const char* MQTT_USER     = "1omr8yulbsmbyugm9yof";         // Your CoreIOT Access Token
+const char* MQTT_PASS     = "";                             // Password is left empty
 
 // Standard CoreIoT topics
 const char* TOPIC_PUB_DATA = "v1/devices/me/telemetry";
+const char* TOPIC_PUB_ATTR = "v1/devices/me/attributes";
 const char* TOPIC_SUB_CTRL = "v1/devices/me/rpc/request/+";
 
 // Use standard WiFiClient for port 1883
@@ -44,14 +45,21 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
     if (!error) {
         String method = doc["method"].as<String>();
-        bool params = doc["params"].as<bool>();
+        bool isTurnOn = doc["params"].as<bool>();
 
         if (method == "setPumpStatus") {
-            if (params == true) {
-                Serial.println("[MQTT] Command: Turn Pump ON");
+            // 1. Activate manual override mode
+            isPumpOverrideActive = true;
+    
+            // 2. Set the deadline for the override to expire
+            pumpOverrideEndTime = xTaskGetTickCount() + pdMS_TO_TICKS(OVERRIDE_DURATION_MS);
+
+            // 3. Execute the manual command
+            if (isTurnOn == true) {
+                Serial.println("[MQTT] Manual Command: Turn Pump ON");
                 xEventGroupSetBits(egPumpControl, EVENT_PUMP_ON);
             } else {
-                Serial.println("[MQTT] Command: Turn Pump OFF");
+                Serial.println("[MQTT] Manual Command: Turn Pump OFF");
                 xEventGroupSetBits(egPumpControl, EVENT_PUMP_OFF);
             }
         }
@@ -71,6 +79,11 @@ void setupWiFi() {
     }
     Serial.println("\n[WiFi] Connected successfully!");
     Serial.printf("[WiFi] IP Address: %s\n", WiFi.localIP().toString().c_str());
+
+    // Sync time via NTP server 
+    // Timezone offset is 7 hours (7 * 3600 seconds) for GMT+7
+    configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+    Serial.println("[NTP] Syncing time...");
 }
 
 // ---------------------------------------------------------
@@ -112,23 +125,35 @@ void taskMQTTCommunication(void *pvParameters) {
 
         // 3. Periodic Publishing Logic
         // Check if it's time to publish and if we have fresh data in the queue
-        if ((xTaskGetTickCount() - lastPublishTime) >= PUBLISH_INTERVAL) {
+        if ((xTaskGetTickCount() - lastPublishTime) >= PUBLISH_INTERVAL || forcePublish) {
+
+            // Reset the flag to prevent continuous publishing
+            forcePublish = false;
             
             // Peek at the queue to get data without removing it
             if (xQueuePeek(qSensorData, &dataToSend, 0) == pdTRUE) {
                 
                 // Construct a JSON payload using ArduinoJson
-                StaticJsonDocument<256> doc;
-                doc["temperature"] = dataToSend.temperature;
-                doc["humidity"]    = dataToSend.humidity;
-                doc["soil"]        = dataToSend.soilMoisture;
-                doc["light"]       = dataToSend.lightIntensity;
+                StaticJsonDocument<256> docTelemetry;
+                docTelemetry["temperature"] = dataToSend.temperature;
+                docTelemetry["humidity"]    = dataToSend.humidity;
+                docTelemetry["soil"]        = dataToSend.soilMoisture;
+                docTelemetry["light"]       = dataToSend.lightIntensity;             
 
-                char jsonBuffer[256];
-                serializeJson(doc, jsonBuffer);
+                char jsonTelemetry[256];
+                serializeJson(docTelemetry, jsonTelemetry);
+                mqttClient.publish(TOPIC_PUB_DATA, jsonTelemetry);
+
+                // Send Attribute data (for Switch state synchronization)
+                StaticJsonDocument<64> docAttr;
+                docAttr["pump_status"] = isPumpCurrentlyOn;             // Real-time hardware state
+
+                char jsonAttr[64];
+                serializeJson(docAttr, jsonAttr);
+                mqttClient.publish(TOPIC_PUB_ATTR, jsonAttr);           // Publish to Attributes
 
                 // Publish to the telemetry topic
-                if (mqttClient.publish(TOPIC_PUB_DATA, jsonBuffer)) {
+                if (mqttClient.publish(TOPIC_PUB_DATA, jsonTelemetry)) {
                     Serial.println("[MQTT] Payload published successfully.");
                 } else {
                     Serial.println("[MQTT] Failed to publish payload.");

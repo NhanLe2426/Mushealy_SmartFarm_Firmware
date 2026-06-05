@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
+#include <time.h>
 #include "PubSubClient.h"
 #include "global.h"
 #include "config.h"
