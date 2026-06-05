@@ -21,7 +21,7 @@ void taskSensorReading(void *pvParameters) {
         readLightIntensity(currentData.lightIntensity);
 
         // Print to Serial Monitor for debugging
-        Serial.printf("[Sensor Task] Temp: %.1f C | Hum: %.1f %% | Soil: %d %% | Light: %d %%\n",
+        Serial.printf("[Sensor Task] Temp: %.1f °C | Hum: %.1f %% | Soil: %d %% | Light: %d lx\n",
                       currentData.temperature, 
                       currentData.humidity, 
                       currentData.soilMoisture, 
@@ -31,6 +31,24 @@ void taskSensorReading(void *pvParameters) {
         // We use xQueueOverwrite because the queue size is 1. 
         // It ensures the queue always holds the most recent data.
         xQueueOverwrite(qSensorData, &currentData);
+
+        // PUMP CONTROL MODE: AUTO
+
+        // 1. Check if the override duration has expired
+        if (isPumpOverrideActive && (xTaskGetTickCount() > pumpOverrideEndTime)) {
+            isPumpOverrideActive = false; // Drop the firewall
+            Serial.println("[Sensor Task] Manual override expired. Resuming AUTO/SCHEDULE operations.");
+        }
+
+        // 2. Only execute AUTO logic if NO override is active
+        if (!isPumpOverrideActive) {
+            if (currentData.soilMoisture < THRESHOLD_SOIL_MOISTURE) {
+                Serial.println("[Sensor Task] AUTO logic: Soil is dry. Triggering pump.");
+                xEventGroupSetBits(egPumpControl, EVENT_PUMP_ON);
+            }
+        } else {
+            Serial.println("[Sensor Task] AUTO logic suspended due to active manual override.");
+        }
 
         // Delay for a specific period before the next reading
         // Using pdMS_TO_TICKS ensures accurate timing in the RTOS environment

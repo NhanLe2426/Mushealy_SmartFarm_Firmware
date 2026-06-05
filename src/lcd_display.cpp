@@ -42,30 +42,37 @@ void taskDisplayLCD(void *pvParameters) {
 
     // FreeRTOS Task lifecycle
     while (1) {
-        if (xQueueReceive(qSensorData, &displayData, portMAX_DELAY) == pdTRUE) {
+        if (xQueuePeek(qSensorData, &displayData, portMAX_DELAY) == pdTRUE) {
             if (xSemaphoreTake(xMutexI2C, portMAX_DELAY) == pdTRUE) {
                 
                 // --- Row 1 ---
                 lcd.setCursor(0, 0); 
-                lcd.print("T:");
+                lcd.print("RT:");
                 lcd.setCursor(3, 0);
                 lcd.print(displayData.temperature, 1); 
+                lcd.setCursor(7, 0);
+                lcd.print((char)223);   // Print the degree symbol using its ASCII code (223)
+                lcd.print("C");
 
-                lcd.setCursor(8, 0);
-                lcd.print("H:");
-                lcd.setCursor(11, 0);
+                lcd.setCursor(10, 0);
+                lcd.print("RH:");
+                lcd.setCursor(13, 0);
                 lcd.print(displayData.humidity, 1);
+                lcd.setCursor(15, 0);
+                lcd.print("%");
 
                 // --- Row 2 ---
                 lcd.setCursor(0, 1);
-                lcd.print("S:");
-                lcd.setCursor(3, 1);
-                lcd.printf("%-3d  ", displayData.soilMoisture); 
+                lcd.print("LUX:");
+                lcd.setCursor(4, 1);
+                lcd.printf("%-3d  ", displayData.lightIntensity); 
 
-                lcd.setCursor(8, 1);
-                lcd.print("L:");
-                lcd.setCursor(11, 1);
-                lcd.printf("%-3d  ", displayData.lightIntensity);
+                lcd.setCursor(10, 1);
+                lcd.print("SM:");
+                lcd.setCursor(13, 1);
+                lcd.printf("%-3d  ", displayData.soilMoisture);
+                lcd.setCursor(15, 1);
+                lcd.printf("%");
 
                 xSemaphoreGive(xMutexI2C);
             }

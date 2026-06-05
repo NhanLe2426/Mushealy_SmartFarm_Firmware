@@ -22,9 +22,18 @@ extern QueueHandle_t qSensorData;           // The queue contains sensor data
 extern SemaphoreHandle_t xMutexI2C;         // Mutex to protect the I2C bus (DHT20 & LCD)
 extern EventGroupHandle_t egPumpControl;    // Event group to trigger water pump actions
 
+// Override mechanism flags
+extern volatile bool isPumpOverrideActive;
+extern volatile TickType_t pumpOverrideEndTime;
+extern volatile bool isPumpCurrentlyOn;             // The physical state of the pump
+extern volatile bool forcePublish;                  // Flag to trigger instant MQTT publish
+
 // Event Group Bits for Pump Control
 #define EVENT_PUMP_ON  (1 << 0)
 #define EVENT_PUMP_OFF (1 << 1)
+
+// Define override duration (e.g., 1 minutes = 60000 ms)
+#define OVERRIDE_DURATION_MS 60000
 
 // Function prototype to initialize all RTOS objects
 void initGlobal_RTOS_Objects();
