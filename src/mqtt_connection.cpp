@@ -47,6 +47,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         String method = doc["method"].as<String>();
         bool isTurnOn = doc["params"].as<bool>();
 
+        // Handle Pump Control
         if (method == "setPumpStatus") {
             // 1. Activate manual override mode
             isPumpOverrideActive = true;
@@ -57,10 +58,21 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             // 3. Execute the manual command
             if (isTurnOn == true) {
                 Serial.println("[MQTT] Manual Command: Turn Pump ON");
-                xEventGroupSetBits(egPumpControl, EVENT_PUMP_ON);
+                xEventGroupSetBits(egDeviceControl, EVENT_PUMP_ON);
             } else {
                 Serial.println("[MQTT] Manual Command: Turn Pump OFF");
-                xEventGroupSetBits(egPumpControl, EVENT_PUMP_OFF);
+                xEventGroupSetBits(egDeviceControl, EVENT_PUMP_OFF);
+            }
+        }
+
+        // Handle Light Control
+        if (method == "setLightStatus") {
+            if (isTurnOn == true) {
+                Serial.println("[MQTT] Manual Command: Turn Pump ON");
+                xEventGroupSetBits(egDeviceControl, EVENT_LIGHT_ON);
+            } else {
+                Serial.println("[MQTT] Manual Command: Turn Pump OFF");
+                xEventGroupSetBits(egDeviceControl, EVENT_LIGHT_OFF);
             }
         }
     }

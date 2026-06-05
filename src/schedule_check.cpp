@@ -23,7 +23,7 @@ void taskScheduleCheck(void *pvParameters) {
                 // 2. Check the manual override firewall
                 if (!isPumpOverrideActive) {
                     Serial.printf("[Schedule Task] It is %02d:%02d. Triggering scheduled watering.\n", currentHour, currentMinute);
-                    xEventGroupSetBits(egPumpControl, EVENT_PUMP_ON);
+                    xEventGroupSetBits(egDeviceControl, EVENT_PUMP_ON);
                 } else {
                     Serial.println("[Schedule Task] Scheduled watering bypassed due to active manual override.");
                 }

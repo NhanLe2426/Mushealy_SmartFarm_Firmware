@@ -8,6 +8,7 @@
 #include "lcd_display.h"
 #include "schedule_check.h"
 #include "pump_relay.h"
+#include "light_control.h"
 #include "mqtt_connection.h"
 
 void setup() {
@@ -32,6 +33,9 @@ void setup() {
 
     // Task Pump Control: Control the pump ON/OFF
     xTaskCreate(taskPumpControl, "Pump Control Task", 2048, NULL, 2, NULL);
+
+    // Task Light Control: Control the NeoPixel LED ON/OFF (behavior like a normal LED)
+    xTaskCreate(taskLightControl, "Light Control Task", 2048, NULL, 2, NULL);
 
     // Task MQTT Network Communication: Handles WiFi, MQTT pub/sub, and JSON parsing.
     xTaskCreate(taskMQTTCommunication, "MQTT Communication Task", 8192, NULL, 2, NULL);

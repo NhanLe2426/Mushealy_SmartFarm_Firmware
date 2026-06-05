@@ -17,7 +17,7 @@ void taskPumpControl(void *pvParameters) {
         // Wait indefinitely for either EVENT_PUMP_ON or EVENT_PUMP_OFF to be set.
         // This function blocks the task (consuming 0 CPU time) until an event occurs.
         EventBits_t uxBits = xEventGroupWaitBits(
-            egPumpControl,                  // The event group handle
+            egDeviceControl,                  // The event group handle
             EVENT_PUMP_ON | EVENT_PUMP_OFF, // The bits to wait for
             pdTRUE,                         // Clear the bits automatically after reading
             pdFALSE,                        // Wait for ANY of the bits (not ALL)
@@ -32,14 +32,22 @@ void taskPumpControl(void *pvParameters) {
             digitalWrite(PUMP_RELAY_PIN, HIGH);
             isPumpCurrentlyOn = true;
             forcePublish = true;                    // Trigger instant update to Dashboard
+
+            // Determine which timeout to use based on the current operating mode
+            uint32_t currentTimeoutMs = TIME_PUMP_ACTIVE_MS; // Default to short auto-burst
+            if (isPumpOverrideActive) {
+                currentTimeoutMs = TIME_MANUAL_TIMEOUT_MS;   // Use long duration for manual
+            }
+
+            Serial.printf("[Pump Task] Pump is ON. Active timeout set to: %d ms\n", currentTimeoutMs);
             
-            // SMART DELAY: Wait for a manual OFF command, but timeout after TIME_PUMP_ACTIVE_MS
+            // SMART DELAY: Wait for a manual OFF command, but timeout after the selected duration
             EventBits_t offBits = xEventGroupWaitBits(
-                egPumpControl, 
+                egDeviceControl, 
                 EVENT_PUMP_OFF, 
                 pdTRUE, 
                 pdFALSE, 
-                pdMS_TO_TICKS(TIME_PUMP_ACTIVE_MS) // Auto-timeout if user forgets to turn off the pump
+                pdMS_TO_TICKS(currentTimeoutMs)
             );
 
             // Check WHY the smart delay finished

@@ -8,5 +8,5 @@ void initLightSensor() {
 void readLightIntensity(int &lightIntensity) {
     // Read the 12-bit analog value (0 - 4095 on ESP32)
     int data = analogRead(LIGHT_SENSOR_PIN);
-    lightIntensity = constrain(map(data, 0, 4095, 0, 100), 0, 100);
+    lightIntensity = data;
 }
