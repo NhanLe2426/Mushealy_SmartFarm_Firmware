@@ -38,12 +38,16 @@ void taskLightControl(void *pvParameters) {
             
             // Magenta/Purple (Full Red + Full Blue) is ideal for plant photosynthesis
             setLightColor(255, 0, 255); 
+            isLightCurrentlyOn = true;
+            forcePublish = true;
         }
         else if ((uxBits & EVENT_LIGHT_OFF) != 0) {
             Serial.println("[Light Task] Event received: Turn OFF light.");
             
             // Turn off all LEDs
             setLightColor(0, 0, 0); 
+            isLightCurrentlyOn = false;
+            forcePublish = false;
         }
     }
 }

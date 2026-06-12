@@ -26,6 +26,7 @@ extern EventGroupHandle_t egDeviceControl;    // Event group to trigger pump and
 extern volatile bool isPumpOverrideActive;
 extern volatile TickType_t pumpOverrideEndTime;
 extern volatile bool isPumpCurrentlyOn;             // The physical state of the pump
+extern volatile bool isLightCurrentlyOn;            // The physical state of the light
 extern volatile bool forcePublish;                  // Flag to trigger instant MQTT publish
 
 // Event Group Bits for Pump Control

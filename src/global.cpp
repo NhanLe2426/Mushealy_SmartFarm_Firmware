@@ -7,6 +7,7 @@ EventGroupHandle_t egDeviceControl = NULL;
 volatile bool isPumpOverrideActive = false;
 volatile TickType_t pumpOverrideEndTime = 0;
 volatile bool isPumpCurrentlyOn = false;
+volatile bool isLightCurrentlyOn = false;
 volatile bool forcePublish = false;
 
 // This func will be called in the setup() in main.cpp to allocate memory

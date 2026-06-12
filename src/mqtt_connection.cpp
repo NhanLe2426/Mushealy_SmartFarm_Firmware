@@ -63,17 +63,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 Serial.println("[MQTT] Manual Command: Turn Pump OFF");
                 xEventGroupSetBits(egDeviceControl, EVENT_PUMP_OFF);
             }
+
+            // Trigger immediate telemetry publish to sync cloud database
+            forcePublish = true;
         }
 
         // Handle Light Control
         if (method == "setLightStatus") {
             if (isTurnOn == true) {
-                Serial.println("[MQTT] Manual Command: Turn Pump ON");
+                Serial.println("[MQTT] Manual Command: Turn Light ON");
                 xEventGroupSetBits(egDeviceControl, EVENT_LIGHT_ON);
             } else {
-                Serial.println("[MQTT] Manual Command: Turn Pump OFF");
+                Serial.println("[MQTT] Manual Command: Turn Light OFF");
                 xEventGroupSetBits(egDeviceControl, EVENT_LIGHT_OFF);
             }
+
+            // Trigger immediate telemetry publish to sync cloud database
+            forcePublish = true;
         }
     }
 }
@@ -146,23 +152,26 @@ void taskMQTTCommunication(void *pvParameters) {
             if (xQueuePeek(qSensorData, &dataToSend, 0) == pdTRUE) {
                 
                 // Construct a JSON payload using ArduinoJson
-                StaticJsonDocument<256> docTelemetry;
-                docTelemetry["temperature"] = dataToSend.temperature;
-                docTelemetry["humidity"]    = dataToSend.humidity;
-                docTelemetry["soil"]        = dataToSend.soilMoisture;
-                docTelemetry["light"]       = dataToSend.lightIntensity;             
+                StaticJsonDocument<384> docTelemetry;
+                docTelemetry["temperature"]  = dataToSend.temperature;
+                docTelemetry["humidity"]     = dataToSend.humidity;
+                docTelemetry["soil"]         = dataToSend.soilMoisture;
+                docTelemetry["light"]        = dataToSend.lightIntensity;    
+                docTelemetry["pump_status"]  = isPumpCurrentlyOn;
+                docTelemetry["light_status"] = isLightCurrentlyOn;
 
-                char jsonTelemetry[256];
+                char jsonTelemetry[384];
                 serializeJson(docTelemetry, jsonTelemetry);
                 mqttClient.publish(TOPIC_PUB_DATA, jsonTelemetry);
 
                 // Send Attribute data (for Switch state synchronization)
-                StaticJsonDocument<64> docAttr;
-                docAttr["pump_status"] = isPumpCurrentlyOn;             // Real-time hardware state
+                StaticJsonDocument<128> docAttr;
+                docAttr["pump_status"]  = isPumpCurrentlyOn;     // Real-time hardware state
+                docAttr["light_status"] = isLightCurrentlyOn;
 
-                char jsonAttr[64];
+                char jsonAttr[128];
                 serializeJson(docAttr, jsonAttr);
-                mqttClient.publish(TOPIC_PUB_ATTR, jsonAttr);           // Publish to Attributes
+                mqttClient.publish(TOPIC_PUB_ATTR, jsonAttr);    // Publish to Attributes
 
                 // Publish to the telemetry topic
                 if (mqttClient.publish(TOPIC_PUB_DATA, jsonTelemetry)) {
