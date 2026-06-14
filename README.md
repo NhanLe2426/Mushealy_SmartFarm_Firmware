@@ -16,7 +16,6 @@
 6. [Project Structure](#project-structure)
 7. [Build & Deployment](#build--deployment)
 8. [Runtime Behavior](#runtime-behavior)
-9. [Edge Computing & Automation](#edge-computing--automation)
 
 ---
 
@@ -202,10 +201,11 @@ The Mushealy SmartFarm IoT Node uses a **multi-tasking architecture** based on F
 **Connection Management:**
 - Attempts connection to broker every 5 seconds if disconnected
 - Subscribes to control topics upon successful connection:
+  - `v1/devices/me/telemetry` (sensor data and device state publishing)
   - `v1/devices/me/rpc/request/+` (RPC commands)
   - `v1/devices/me/attributes` (configuration updates)
 
-**Publishing Logic (10-second interval or on force trigger):**
+<!-- **Publishing Logic (10-second interval or on force trigger):**
 - Constructs JSON telemetry payload with latest sensor data and device state
 - Publishes to `v1/devices/me/telemetry`:
   ```json
@@ -247,7 +247,7 @@ The Mushealy SmartFarm IoT Node uses a **multi-tasking architecture** based on F
 }
 ```
 - Updates edge computing variables dynamically
-- No restart required for configuration changes
+- No restart required for configuration changes -->
 
 ### Synchronization Primitives
 
