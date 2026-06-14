@@ -12,25 +12,37 @@ void taskScheduleCheck(void *pvParameters) {
 
     // Infinite Loop for Network Handling
     while (1) {
-        // Get current local time
+        // --- 1. TIME-BASED AUTOMATION ---
         if (getLocalTime(&timeinfo)) {
             int currentHour = timeinfo.tm_hour;
             int currentMinute = timeinfo.tm_min;
 
-            // 1. Check if it is the scheduled time
-            if (currentHour == SCHEDULED_HOUR && currentMinute == SCHEDULED_MINUTE) {
-                
-                // 2. Check the manual override firewall
+            // Check against dynamically updated schedule variables
+            if (currentHour == autoWaterHour && currentMinute == autoWaterMinute) {
                 if (!isPumpOverrideActive) {
                     Serial.printf("[Schedule Task] It is %02d:%02d. Triggering scheduled watering.\n", currentHour, currentMinute);
                     xEventGroupSetBits(egDeviceControl, EVENT_PUMP_ON);
-                } else {
-                    Serial.println("[Schedule Task] Scheduled watering bypassed due to active manual override.");
                 }
-
-                // Delay for exactly 60 seconds to avoid triggering multiple times within the same minute
                 vTaskDelay(pdMS_TO_TICKS(60000));
                 continue; 
+            }
+        }
+
+        // --- 2. SENSOR-BASED AUTOMATION (Edge Threshold Logic) ---
+        SensorData currentData;
+        // Peek at the latest sensor data without removing it from the queue
+        if (xQueuePeek(qSensorData, &currentData, 0) == pdTRUE) {
+            
+            // Trigger pump if soil is too dry, provided manual mode is not active and pump is currently off
+            if (currentData.soilMoisture < soilMoistureThreshold) {
+                if (!isPumpOverrideActive && !isPumpCurrentlyOn) {
+                    Serial.printf("[Schedule Task] Soil moisture (%d) below threshold (%d). Triggering pump.\n", 
+                                  currentData.soilMoisture, soilMoistureThreshold);
+                    xEventGroupSetBits(egDeviceControl, EVENT_PUMP_ON);
+                    
+                    // Wait for the recovering time before checking again to avoid flooding
+                    vTaskDelay(pdMS_TO_TICKS(TIME_RECOVERING_MS));
+                }
             }
         }
         
