@@ -8,5 +8,5 @@ void initSoilSensor() {
 void readSoilMoisture(int &moisture) {
     // Read the 12-bit analog value (0 - 4095 on ESP32)
     int data = analogRead(SOIL_MOISTURE_PIN);
-    moisture = constrain(map(data, 0, 4095, 100, 0), 0, 100);
+    moisture = constrain(map(data, 0, 4095, 0, 100), 0, 100);
 }

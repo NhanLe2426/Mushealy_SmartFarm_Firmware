@@ -29,19 +29,19 @@ const int NEO_PIXEL_NUM = 4;                    // Number of LEDs: 4 LEDs
 // ---------------------------------------------------------
 
 // Thresholds for triggering automated actions
-const int THRESHOLD_SOIL_MOISTURE = 40;
-const int THRESHOLD_LIGHT = 2000;
+// const int THRESHOLD_SOIL_MOISTURE = 40;
+// const int THRESHOLD_LIGHT = 2000;
 
 // Timing configurations (in milliseconds)
-const uint32_t TIME_PUMP_ACTIVE_MS = 2000;      // How long the pump stays on
+const uint32_t TIME_PUMP_ACTIVE_MS = 10000;      // How long the pump stays on
 const uint32_t TIME_MANUAL_TIMEOUT_MS = 5000;   // Time out for Manual Mode 
 const uint32_t TIME_RECOVERING_MS = 5000;       // Wait time for water to absorb into soil
 
 // ---------------------------------------------------------
 // Scheduled Watering Configuration
 // ---------------------------------------------------------
-const int SCHEDULED_HOUR = 14;                   // Set hour (0-23)
-const int SCHEDULED_MINUTE = 42;                // Set minute (0-59)
+// const int SCHEDULED_HOUR = 14;                  // Set hour (0-23)
+// const int SCHEDULED_MINUTE = 55;                // Set minute (0-59)
 
 // P0 = 32
 // P1 = 33

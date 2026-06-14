@@ -29,6 +29,11 @@ extern volatile bool isPumpCurrentlyOn;             // The physical state of the
 extern volatile bool isLightCurrentlyOn;            // The physical state of the light
 extern volatile bool forcePublish;                  // Flag to trigger instant MQTT publish
 
+// Edge Computing variables for dynamic automation
+extern volatile int autoWaterHour;
+extern volatile int autoWaterMinute;
+extern volatile int soilMoistureThreshold;
+
 // Event Group Bits for Pump Control
 #define EVENT_PUMP_ON   (1 << 0)
 #define EVENT_PUMP_OFF  (1 << 1)

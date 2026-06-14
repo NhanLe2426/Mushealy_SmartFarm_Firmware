@@ -10,6 +10,11 @@ volatile bool isPumpCurrentlyOn = false;
 volatile bool isLightCurrentlyOn = false;
 volatile bool forcePublish = false;
 
+// Initialize with default safe values
+volatile int autoWaterHour = 16;           // Default: 15:xx PM
+volatile int autoWaterMinute = 29;          // Default: xx:00
+volatile int soilMoistureThreshold = 40;   // Default: 40% moisture
+
 // This func will be called in the setup() in main.cpp to allocate memory
 void initGlobal_RTOS_Objects() {
     // Create a queue which can store one SensorData element

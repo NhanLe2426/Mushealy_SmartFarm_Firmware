@@ -30,6 +30,7 @@ PubSubClient mqttClient(espClient);
 // ---------------------------------------------------------
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
     Serial.printf("[MQTT] RPC Request arrived on topic: %s\n", topic);
+    String topicStr = String(topic);
     
     // Convert payload to String
     String message = "";
@@ -37,13 +38,17 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         message += (char)payload[i];
     }
     Serial.println("[MQTT] RPC Payload: " + message);
+    Serial.println("[MQTT] Incoming Message on: " + topicStr);
 
     // CoreIoT sends control commands in JSON format via RPC.
     // Example payload: {"method": "setPumpStatus", "params": true}
     StaticJsonDocument<256> doc;
     DeserializationError error = deserializeJson(doc, message);
 
-    if (!error) {
+    if (error) return;
+
+    // 1. Handle RPC Manual Control Commands
+    if (topicStr.indexOf("rpc") >= 0) {
         String method = doc["method"].as<String>();
         bool isTurnOn = doc["params"].as<bool>();
 
@@ -80,6 +85,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
             // Trigger immediate telemetry publish to sync cloud database
             forcePublish = true;
+        }
+    }
+    // 2. Handle Cloud Configuration Updates (Edge Computing)
+    else if (topicStr.indexOf("attributes") >= 0) {
+        Serial.println("[MQTT] Edge parameters updated from Cloud");
+        
+        if (doc.containsKey("schedule_hour")) {
+            autoWaterHour = doc["schedule_hour"].as<int>();
+            Serial.printf("[MQTT] New Schedule Hour: %d\n", autoWaterHour);
+        }
+        if (doc.containsKey("schedule_minute")) {
+            autoWaterMinute = doc["schedule_minute"].as<int>();
+            Serial.printf("[MQTT] New Schedule Minute: %d\n", autoWaterMinute);
+        }
+        if (doc.containsKey("soil_threshold")) {
+            soilMoistureThreshold = doc["soil_threshold"].as<int>();
+            Serial.printf("[MQTT] New Soil Threshold: %d\n", soilMoistureThreshold);
         }
     }
 }
@@ -131,6 +153,8 @@ void taskMQTTCommunication(void *pvParameters) {
                 Serial.println("[MQTT] Connected to Broker!");
                 // Subscribe to control topics upon successful connection
                 mqttClient.subscribe(TOPIC_SUB_CTRL);
+                // Subscribe to Shared Attributes updates from the cloud
+                mqttClient.subscribe("v1/devices/me/attributes");
             } else {
                 Serial.printf("[MQTT] Connection failed, rc=%d. Retrying in 5s...\n", mqttClient.state());
                 vTaskDelay(pdMS_TO_TICKS(5000));
@@ -157,8 +181,8 @@ void taskMQTTCommunication(void *pvParameters) {
                 docTelemetry["humidity"]     = dataToSend.humidity;
                 docTelemetry["soil"]         = dataToSend.soilMoisture;
                 docTelemetry["light"]        = dataToSend.lightIntensity;    
-                docTelemetry["pump_status"]  = isPumpCurrentlyOn;
-                docTelemetry["light_status"] = isLightCurrentlyOn;
+                docTelemetry["pump_status"]  = isPumpCurrentlyOn ? 1 : 0;
+                docTelemetry["light_status"] = isLightCurrentlyOn ? 1 : 0;
 
                 char jsonTelemetry[384];
                 serializeJson(docTelemetry, jsonTelemetry);
