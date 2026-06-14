@@ -109,7 +109,7 @@ The Mushealy SmartFarm IoT Node uses a **multi-tasking architecture** based on F
 │                         │ xMutexI2C   │  (Semaphore)            │
 │                         └──────┬──────┘                         │
 │                                │                                │
-│  ┌──────────────────┐  ┌──────▼────────┐  ┌──────────────────┐  │
+│  ┌──────────────────┐  ┌───────▼───────┐  ┌──────────────────┐  │
 │  │  PUMP CONTROL    │  │ LIGHT CONTROL │  │ MQTT COMM TASK   │  │
 │  │  Task (P2)       │  │  Task (P2)    │  │  Task (P2)       │  │
 │  │  - Event wait    │  │  - NeoPixel   │  │  - WiFi setup    │  │
@@ -573,16 +573,7 @@ MultidisciplinaryProject/
 │   ├── schedule_check.cpp      # Schedule and threshold automation
 │   └── mqtt_connection.cpp     # MQTT and WiFi implementation
 │
-└── lib/
-    ├── DHT20/                  # DHT20 sensor library
-    │   ├── DHT20.cpp
-    │   └── DHT20.h
-    ├── LCD/                    # LiquidCrystal I2C library
-    │   ├── LiquidCrystal_I2C.cpp
-    │   └── LiquidCrystal_I2C.h
-    └── PubSubClient/           # MQTT client library
-        ├── PubSubClient.cpp
-        └── PubSubClient.h
+└── lib/                        # Custom library
 ```
 
 ### File Descriptions
@@ -716,4 +707,4 @@ platformio run -e esp32dev --target monitor
 
 **Document Version**: 1.0  
 **Last Updated**: 2026  
-**Project**: Mushealy SmartFarm IoT Node  
+**Project**: Mushealy SmartFarm  
